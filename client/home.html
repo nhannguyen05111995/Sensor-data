@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -8,35 +9,124 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://momentjs.com/downloads/moment.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/series-label.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
     <title>Sensors</title>
     <script type="text/javascript">
         $.get("latest-event", function (response, status) {
             var { data } = response
             var tbody = document.querySelector(".latest-event");
-            var template = document.querySelector('#tableRowLatestEvent');
+            renderRow(data, tbody)
+
+        });
+
+        $.get("last-event", function (response, status) {
+            var data = response
+            var tbody = document.querySelector(".last-event");
+            $(".last-event").empty()
+            let s1 = []
+            let s2 = []
+            let s3 = []
+            var s4 = []
+            response.map(data => {
+                renderRow(data, tbody)
+                var d1 = new Date(data.date)
+                if (data.sensor1)
+                    s1.push([Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate(), d1.getHours(), d1.getMinutes()), data.sensor1])
+                if (data.sensor2)
+                    s2.push([Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate(), d1.getHours(), d1.getMinutes()), data.sensor2])
+                if (data.sensor3)
+                    s3.push([Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate(), d1.getHours(), d1.getMinutes()), data.sensor3])
+                if (data.sensor4)
+                    s4.push([Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate(), d1.getHours(), d1.getMinutes()), data.sensor4])
+
+            })
+            renderChart(s1, s2, s3, s4)
+
+        })
+
+        function renderChart(s1, s2, s3, s4) {
+            Highcharts.chart('container', {
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: 'Fluctuation of all sensors'
+                },
+
+                xAxis: {
+                    type: 'datetime',
+                    labels: {
+                        format: "{value:%b %e %Y %H:%M}"
+                    },
+                },
+                yAxis: {
+                    title: {
+                        text: 'Snow sensors values'
+                    },
+                    min: 0
+                },
+                tooltip: {
+                    headerFormat: '<b>{series.name}</b><br>',
+                    pointFormat: '{point.x:%e %b %Y %H:%M}: {point.y:.2f}'
+                },
+
+                plotOptions: {
+                    series: {
+                        marker: {
+                            enabled: true
+                        }
+                    }
+                },
+
+                colors: ['#6CF', '#39F', '#06C', '#036'],
+                series: [{
+                    name: "Sensor 1",
+                    data: s1
+                },
+                {
+                    name: "Sensor 2",
+                    data: s2
+                },
+                {
+                    name: "Sensor 3",
+                    data: s3
+                },
+                {
+                    name: "Sensor 4",
+                    data: s4
+                }],
+
+                responsive: {
+                    rules: [{
+                        condition: {
+                            maxWidth: 500
+                        },
+                        chartOptions: {
+                            plotOptions: {
+                                series: {
+                                    marker: {
+                                        radius: 2.5
+                                    }
+                                }
+                            }
+                        }
+                    }]
+                }
+            });
+        }
+
+        function renderRow(data, body) {
+            var template = document.querySelector('#tableRow');
             var clone = template.content.cloneNode(true);
             var tdDate = clone.querySelectorAll(".date");
             var tdSensor1 = clone.querySelectorAll(".sensor1");
             var tdSensor2 = clone.querySelectorAll(".sensor2");
             var tdSensor3 = clone.querySelectorAll(".sensor3");
             var tdSensor4 = clone.querySelectorAll(".sensor4");
-            var save = clone.querySelectorAll(".save");
-            save[0].addEventListener("click", () => {
-                axios.post('last-event', data)
-                    .then(function (response) {
-                        if (response.status == 201) {
-                            loadEventHistory()
-                        }
-                        else if (response.status == 200) {
-                            alert(response.data.message)
-                        }
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
-
-            }, false);
-
             tdDate[0].textContent = moment(data.date).format("DD.MM.YYYY HH:mm")
             if (data.sensor1)
                 tdSensor1[0].textContent = Number.parseFloat(data.sensor1).toFixed(2)
@@ -46,52 +136,13 @@
                 tdSensor3[0].textContent = Number.parseFloat(data.sensor3).toFixed(2)
             if (data.sensor4)
                 tdSensor4[0].textContent = Number.parseFloat(data.sensor4).toFixed(2)
-            tbody.appendChild(clone);
-        });
+            body.appendChild(clone);
 
-        loadEventHistory()
-
-        function loadEventHistory() {
-            $.get("last-event", function (response, status) {
-                var data = response
-                var tbody = document.querySelector(".last-event");
-                $(".last-event").empty()
-                response.map(data => {
-                    var template = document.querySelector('#tableRowHistoryEvents');
-                    var clone = template.content.cloneNode(true);
-                    var tdDate = clone.querySelectorAll(".date");
-                    var tdSensor1 = clone.querySelectorAll(".sensor1");
-                    var tdSensor2 = clone.querySelectorAll(".sensor2");
-                    var tdSensor3 = clone.querySelectorAll(".sensor3");
-                    var tdSensor4 = clone.querySelectorAll(".sensor4");
-                    var remove = clone.querySelectorAll(".remove");
-                    remove[0].addEventListener("click", () => {
-                        var r = confirm("Are you sure you want to remove this event?");
-                        if (!r) return
-                        axios.delete('last-event/' + data._id)
-                            .then(function (response) {
-                                loadEventHistory()
-                            })
-                            .catch(function (error) {
-                                console.log(error);
-                            });
-                    }, false);
-                    tdDate[0].textContent = moment(data.date).format("DD.MM.YYYY HH:mm")
-                    if (data.sensor1)
-                        tdSensor1[0].textContent = Number.parseFloat(data.sensor1).toFixed(2)
-                    if (data.sensor2)
-                        tdSensor2[0].textContent = Number.parseFloat(data.sensor2).toFixed(2)
-                    if (data.sensor3)
-                        tdSensor3[0].textContent = Number.parseFloat(data.sensor3).toFixed(2)
-                    if (data.sensor4)
-                        tdSensor4[0].textContent = Number.parseFloat(data.sensor4).toFixed(2)
-                    tbody.appendChild(clone);
-                })
-            })
         }
 
     </script>
 </head>
+
 <body>
     <div class='container' style="margin-top: 30px;">
         <h3>Latest event</h3>
@@ -104,7 +155,6 @@
                         <th>Sensor 2</th>
                         <th>Sensor 3</th>
                         <th>Sensor 4</th>
-                        <th>Options</th>
                     </tr>
                 </thead>
                 <tbody class="latest-event">
@@ -121,33 +171,29 @@
                         <th>Sensor 2</th>
                         <th>Sensor 3</th>
                         <th>Sensor 4</th>
-                        <th>Options</th>
                     </tr>
                 </thead>
                 <tbody class="last-event">
                 </tbody>
             </table>
         </div>
+
+        <figure class="highcharts-figure">
+            <div id="container"></div>
+        </figure>
     </div>
-    <template id="tableRowLatestEvent">
+    <template id="tableRow">
         <tr>
             <td class="date"></td>
             <td class="sensor1"></td>
             <td class="sensor2"></td>
             <td class="sensor3"></td>
             <td class="sensor4"></td>
-            <td><button class="btn btn-sm btn-primary save">Save</button></td>
         </tr>
     </template>
-    <template id="tableRowHistoryEvents">
-        <tr>
-            <td class="date"></td>
-            <td class="sensor1"></td>
-            <td class="sensor2"></td>
-            <td class="sensor3"></td>
-            <td class="sensor4"></td>
-            <td><button class="btn btn-sm btn-danger remove">Remove</button></td>
-        </tr>
-    </template>
+
+
+
 </body>
+
 </html>

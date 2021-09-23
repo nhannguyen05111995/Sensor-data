@@ -4,7 +4,11 @@ const path = require("path")
 const mongoose = require("mongoose")
 const lastEventRouter = require('./routes/last-event')
 const latestEventRouter = require('./routes/latest-event')
+const scheduledTask = require('./scheduled-task')
+scheduledTask.run()
+
 const port = process.env.PORT || 3000
+
 require("dotenv").config()
 const cors = require('cors');
 app.use(express.json());
@@ -30,3 +34,4 @@ mongoose.connect(uri, {
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 })
+
