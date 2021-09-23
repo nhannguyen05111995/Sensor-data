@@ -1,37 +1,31 @@
 const express = require('express')
-const axios = require('axios')
 const app = express();
 const path = require("path")
+const mongoose = require("mongoose")
+const lastEventRouter = require('./routes/last-event')
+const latestEventRouter = require('./routes/latest-event')
 const port = process.env.PORT || 3000
 require("dotenv").config()
-
+const cors = require('cors');
+app.use(express.json());
+app.use(cors());
 app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname + '/home.html'));
+    res.sendFile(path.join(__dirname + '/client/home.html'));
 });
+app.use('/latest-event', latestEventRouter)
+app.use('/last-event', lastEventRouter)
 
-app.get('/event', (req, res) => {
-    try {
-        axios
-            .get("https://opendata.hopefully.works/api/events", {
-                headers: {
-                    "Authorization": `Bearer ${process.env.TOKEN}`
-                }
-            })
-            .then((response) => {
-                res.status(200).json({ success: true, data: response.data });
-
-            })
-            .catch((error) => {
-                console.log(error)
-                res.status(400).json({ success: false, error });
-
-            })
-    }
-    catch (error) {
-        res.status(400).json({ success: false, error });
-    }
-
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.rxbdc.mongodb.net/${process.env.DB_NAME}?retryWrites=true&w=majority`
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 })
+    .then(() => {
+        console.log("Database connected")
+    })
+    .catch((e) => {
+        console.log("error", e)
+    })
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
