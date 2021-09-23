@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://momentjs.com/downloads/moment.js"></script>
+    <title>Sensors</title>
+    <script type="text/javascript">
+        $.get("event", function (response, status) {
+            var { data } = response
+            var tbody = document.querySelector("tbody");
+            var template = document.querySelector('#tablerow');
+            var clone = template.content.cloneNode(true);
+            var tdDate = clone.querySelectorAll(".date");
+            var tdSensor1 = clone.querySelectorAll(".sensor1");
+            var tdSensor2 = clone.querySelectorAll(".sensor2");
+            var tdSensor3 = clone.querySelectorAll(".sensor3");
+            var tdSensor4 = clone.querySelectorAll(".sensor4");
+
+            tdDate[0].textContent = moment(data.date).format("DD.MM.YYYY HH:mm")
+            if (data.sensor1)
+                tdSensor1[0].textContent = Number.parseFloat(data.sensor1).toFixed(2)
+            if (data.sensor2)
+                tdSensor2[0].textContent = Number.parseFloat(data.sensor2).toFixed(2)
+            if (data.sensor3)
+                tdSensor3[0].textContent = Number.parseFloat(data.sensor3).toFixed(2)
+            if (data.sensor4)
+                tdSensor4[0].textContent = Number.parseFloat(data.sensor4).toFixed(2)
+            tbody.appendChild(clone);
+        });
+    </script>
+</head>
+
+<body>
+    <div class='container'>
+        <div class="table-responsive">
+            <table id="table" class="table table-bordered ">
+                <thead>
+                    <tr class="bg-light">
+                        <th>Date</th>
+                        <th>Sensor 1</th>
+                        <th>Sensor 2</th>
+                        <th>Sensor 3</th>
+                        <th>Sensor 4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <template id="tablerow">
+        <tr>
+            <td class="date"></td>
+            <td class="sensor1"></td>
+            <td class="sensor2"></td>
+            <td class="sensor3"></td>
+            <td class="sensor4"></td>
+        </tr>
+    </template>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
