@@ -1,11 +1,9 @@
-const reel = require('node-reel')
 const axios = require('axios')
 require("dotenv").config()
 const LastEvent = require('./models/last-event');
 
 var cron = require('node-cron');
-
-var task = cron.schedule('* * * * *', () =>  {
+var task = cron.schedule('0 */45 * * * *', () =>  {
     axios
     .get("https://opendata.hopefully.works/api/events", {
         headers: {

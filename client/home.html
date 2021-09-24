@@ -14,6 +14,9 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <link href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css" rel="stylesheet">
+
+    <script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
     <title>Sensors</title>
     <script type="text/javascript">
         $.get("latest-event", function (response, status) {
@@ -24,15 +27,25 @@
         });
 
         $.get("last-event", function (response, status) {
-            var data = response
-            var tbody = document.querySelector(".last-event");
-            $(".last-event").empty()
+            var data = response.map(i => {
+                var { sensor1, sensor2, sensor3, sensor4 } = i
+                if (i.sensor1)
+                    sensor1 = Number.parseFloat(i.sensor1).toFixed(2)
+                if (i.sensor2)
+                    sensor2 = Number.parseFloat(i.sensor2).toFixed(2)
+                if (i.sensor3)
+                    sensor3 = Number.parseFloat(i.sensor3).toFixed(2)
+                if (i.sensor4)
+                    sensor4 = Number.parseFloat(i.sensor4).toFixed(2)
+                return { sensor1, sensor2, sensor3, sensor4, "date": moment(i.date).format("DD.MM.YYYY HH:mm") }
+            })
+            $("#last-event").bootstrapTable({ data })
             let s1 = []
             let s2 = []
             let s3 = []
             var s4 = []
+
             response.map(data => {
-                renderRow(data, tbody)
                 var d1 = new Date(data.date)
                 if (data.sensor1)
                     s1.push([Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate(), d1.getHours(), d1.getMinutes()), data.sensor1])
@@ -162,22 +175,18 @@
             </table>
         </div>
         <h3>Last events</h3>
-        <div class="table-responsive">
-            <table id="last-event" class="table table-bordered ">
-                <thead>
-                    <tr class="bg-light">
-                        <th>Date</th>
-                        <th>Sensor 1</th>
-                        <th>Sensor 2</th>
-                        <th>Sensor 3</th>
-                        <th>Sensor 4</th>
-                    </tr>
-                </thead>
-                <tbody class="last-event">
-                </tbody>
-            </table>
-        </div>
 
+        <table id="last-event" data-sort-name="date" data-sort-order="desc">
+            <thead>
+                <tr class="bg-light">
+                    <th data-field="date" data-sortable="true">Date</th>
+                    <th data-field="sensor1" data-sortable="true">Sensor 1</th>
+                    <th data-field="sensor2" data-sortable="true">Sensor 2</th>
+                    <th data-field="sensor3" data-sortable="true">Sensor 3</th>
+                    <th data-field="sensor4" data-sortable="true">Sensor 4</th>
+                </tr>
+            </thead>
+        </table>
         <figure class="highcharts-figure">
             <div id="container"></div>
         </figure>
@@ -191,9 +200,6 @@
             <td class="sensor4"></td>
         </tr>
     </template>
-
-
-
 </body>
 
 </html>
