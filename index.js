@@ -5,7 +5,7 @@ const mongoose = require("mongoose")
 const lastEventRouter = require('./routes/last-event')
 const latestEventRouter = require('./routes/latest-event')
 const scheduledTask = require('./scheduled-task')
-scheduledTask.run()
+scheduledTask.start()
 
 const port = process.env.PORT || 3000
 
